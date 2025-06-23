@@ -1,48 +1,41 @@
-
 import json
 
 class AuthHandler:
-    def __init__(self, mqtt_client):
-        self.mqtt_client = mqtt_client
-        # Mock data
-        self.user_store = {
-            "user1": {"password": "userpass", "role": "user"},
-            "admin1": {"password": "adminpass", "role": "admin"},
-        }
+    def __init__(self, mqttClient, database):
+        self.mqttClient = mqttClient
+        self.db = database
 
-    def handleLoginRequest(self, payload: bytes, response_topic: str):
+    def handleLoginRequest(self, payload: bytes, responseTopic: str):
         try:
             data = json.loads(payload.decode())
 
-            username = data.get("username")
+            email = data.get("username")  # or "email" if preferred
             password = data.get("password")
 
-            if not username or not password:
-                return self._publishResponse(response_topic, {
+            if not email or not password:
+                return self._publishResponse(responseTopic, {
                     "status": "error",
-                    "message": "Username and password required"
+                    "message": "Email and password required"
                 })
 
-            user = self.user_store.get(username)
-
+            user = self.db.get_user_by_email(email)
             if user and user["password"] == password:
-                return self._publishResponse(response_topic, {
+                return self._publishResponse(responseTopic, {
                     "status": "success",
-                    "role": user["role"],
-                    "token": f"mock-token-{username}"
+                    "role": "admin" if user["admin"] else "user",
+                    "token": f"mock-token-{email}"
                 })
 
-            return self._publishResponse(response_topic, {
+            return self._publishResponse(responseTopic, {
                 "status": "error",
                 "message": "Invalid credentials"
             })
 
         except json.JSONDecodeError:
-            self._publishResponse(response_topic, {
+            self._publishResponse(responseTopic, {
                 "status": "error",
-                "message": "Invalid JSON payload"
+                "message": "Invalid JSON format"
             })
 
     def _publishResponse(self, topic: str, message: dict):
-        payload = json.dumps(message)
-        self.mqtt_client.publish(topic, payload)
+        self.mqttClient.publish(topic, json.dumps(message))

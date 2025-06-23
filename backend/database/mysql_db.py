@@ -61,3 +61,10 @@ class MySQLDatabase:
     def getPassword(self, org_id=None, email=None):
         user = self.getUserRow(org_id=org_id, email=email)
         return user["password"] if user else None
+
+if __name__ == "__main__":
+    db=MySQLDatabase()
+    db.connect()
+    print(
+        db.getUserRow(org_id="309930")
+    )

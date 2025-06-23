@@ -1,15 +1,20 @@
 
 import paho.mqtt.client as mqtt
+from backend.database.mysql_db import MySQLDatabase
 from services.auth_handler import AuthHandler
 
-BROKER_ADDRESS = "146.64.54.40" #"172.30.243.138"
+BROKER_ADDRESS = 'pta-smartlab.csir.co.za' #"172.30.243.138"
 PORT = 1883
 LOGIN_REQUEST_TOPIC = "frontend/login/request"
 LOGIN_RESPONSE_TOPIC = "backend/login/response"
 
 #Maybe use global instance
 client = mqtt.Client()
-auth_handler = AuthHandler(client)
+db=MySQLDatabase()
+authHandler = AuthHandler(
+    mqttClient=client,
+    database=db
+)
 
 def onConnect(client, userdata, flags, rc):
     print("Connected to MQTT Broker with result code:", rc)
@@ -17,7 +22,7 @@ def onConnect(client, userdata, flags, rc):
 
 def onMessage(client, userdata, msg):
     if msg.topic == LOGIN_REQUEST_TOPIC:
-        auth_handler.handleLoginRequest(msg.payload, LOGIN_RESPONSE_TOPIC)
+        authHandler.handleLoginRequest(msg.payload, LOGIN_RESPONSE_TOPIC)
     else:
         print(f"Ignored message on {msg.topic}")
 
