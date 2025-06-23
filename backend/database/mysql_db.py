@@ -56,11 +56,51 @@ class MySQLDatabase:
 
     def getUserId(self, org_id=None, email=None):
         user = self.getUserRow(org_id=org_id, email=email)
-        return user["orgId"] if user else None
+        return user["orgId"] if user else None # type: ignore
 
     def getPassword(self, org_id=None, email=None):
         user = self.getUserRow(org_id=org_id, email=email)
-        return user["password"] if user else None
+        return user["password"] if user else None # type: ignore
+    
+    def fetch_all_fumehoods(self):
+        self.ensureConnection() # type: ignore
+        try:
+            self.cursor.execute("SELECT * FROM fumehoods") # type: ignore
+            return self.cursor.fetchall() # type: ignore
+        except Error as e:
+            print(f"Error fetching all fumehoods: {e}")
+            return []
+        
+    def fetch_fumehoods_by_user(self, email):
+        self.ensureConnection() # type: ignore
+        try:
+            query = """
+                SELECT f.* FROM fumehoods f
+                JOIN users u ON f.userId IN (u.id, 0)
+                WHERE u.email = %s AND u.active = 1
+            """
+            self.cursor.execute(query, (email,)) # type: ignore
+            return self.cursor.fetchall() # type: ignore
+        except Error as e:
+            print(f"Error fetching user fumehoods: {e}")
+            return []
+
+    def assign_fumehood_to_user(self, fumehood_nr, user_id):
+        self.ensureConnection() # type: ignore
+        try:
+            check = "SELECT userId FROM fumehoods WHERE fumehoodNr = %s"
+            self.cursor.execute(check, (fumehood_nr,)) # type: ignore
+            row = self.cursor.fetchone() # type: ignore
+            if not row or row["userId"] != 0: # type: ignore
+                return False
+
+            update = "UPDATE fumehoods SET userId = %s WHERE fumehoodNr = %s"
+            self.cursor.execute(update, (user_id, fumehood_nr)) # type: ignore
+            self.connection.commit() # type: ignore
+            return True
+        except Error as e:
+            print(f"Checkout error: {e}")
+            return False
 
 if __name__ == "__main__":
     db=MySQLDatabase()
