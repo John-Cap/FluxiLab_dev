@@ -101,6 +101,25 @@ class MySQLDatabase:
         except Error as e:
             print(f"Checkout error: {e}")
             return False
+        
+    def release_fumehood(self, fumehood_nr, user_id):
+        self.ensureConnection() # type: ignore
+        try:
+            # Confirm ownership
+            check = "SELECT userId FROM fumehoods WHERE fumehoodNr = %s"
+            self.cursor.execute(check, (fumehood_nr,)) # type: ignore
+            row = self.cursor.fetchone() # type: ignore
+            if not row or row["userId"] != user_id: # type: ignore
+                return False
+
+            # Release
+            update = "UPDATE fumehoods SET userId = 0 WHERE fumehoodNr = %s"
+            self.cursor.execute(update, (fumehood_nr,)) # type: ignore
+            self.connection.commit() # type: ignore
+            return True
+        except Error as e:
+            print(f"Release error: {e}")
+            return False
 
 if __name__ == "__main__":
     db=MySQLDatabase()

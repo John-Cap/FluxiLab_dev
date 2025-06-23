@@ -1,13 +1,12 @@
 import json
-
 from backend.utils.jwt_utils import decode_token
 
-class CheckoutHandler:
+class ReleaseHandler:
     def __init__(self, mqtt_client, database):
         self.mqtt_client = mqtt_client
         self.db = database
 
-    def handle_checkout_request(self, payload: bytes, response_topic: str):
+    def handle_release_request(self, payload: bytes, response_topic: str):
         try:
             data = json.loads(payload.decode())
             token = data.get("token")
@@ -20,17 +19,15 @@ class CheckoutHandler:
             if "error" in session:
                 return self._respond(response_topic, {"status": "error", "message": session["error"]})
 
-            email = session["user"]
-            user = self.db.getUserRow(email=email)
-            if not user or not user["active"]:
+            user = self.db.getUserRow(email=session["user"])
+            if not user:
                 return self._respond(response_topic, {"status": "error", "message": "User not found"})
 
-            success = self.db.assign_fumehood_to_user(fumehood_nr, user["id"])
-
+            success = self.db.release_fumehood(fumehood_nr, user["id"])
             if success:
                 return self._respond(response_topic, {"status": "success", "fumehoodNr": fumehood_nr})
             else:
-                return self._respond(response_topic, {"status": "error", "message": "Fumehood unavailable"})
+                return self._respond(response_topic, {"status": "error", "message": "Permission denied or not assigned"})
 
         except json.JSONDecodeError:
             self._respond(response_topic, {"status": "error", "message": "Invalid JSON"})
