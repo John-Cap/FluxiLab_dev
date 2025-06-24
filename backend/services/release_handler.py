@@ -25,6 +25,7 @@ class ReleaseHandler:
 
             success = self.db.release_fumehood(fumehood_nr, user["id"])
             if success:
+                self.db.log_usage_action(user["id"], fumehood_nr, "release")
                 return self._respond(response_topic, {"status": "success", "fumehoodNr": fumehood_nr})
             else:
                 return self._respond(response_topic, {"status": "error", "message": "Permission denied or not assigned"})

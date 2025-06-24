@@ -120,6 +120,18 @@ class MySQLDatabase:
         except Error as e:
             print(f"Release error: {e}")
             return False
+        
+    def log_usage_action(self, user_id, fumehood_nr, action):
+        self.ensureConnection()
+        try:
+            query = """
+                INSERT INTO usage_log (userId, fumehoodNr, action)
+                VALUES (%s, %s, %s)
+            """
+            self.cursor.execute(query, (user_id, fumehood_nr, action)) # type: ignore
+            self.connection.commit() # type: ignore
+        except Error as e:
+            print(f"Logging error: {e}")
 
 if __name__ == "__main__":
     db=MySQLDatabase()
