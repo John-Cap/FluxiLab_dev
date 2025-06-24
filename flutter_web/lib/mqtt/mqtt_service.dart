@@ -1,0 +1,76 @@
+import 'dart:convert';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
+
+typedef MessageCallback =
+    void Function(String topic, Map<String, dynamic> payload);
+
+class MQTTService {
+  final String broker;
+  final String clientId;
+  final List<String> subscribeTopics;
+
+  late MessageCallback onMessage = (topic, payload) {};
+  late MqttServerClient _client;
+
+  MQTTService({
+    required this.broker,
+    required this.clientId,
+    required this.subscribeTopics,
+  });
+
+  Future<void> connect() async {
+    _client = MqttServerClient(broker, clientId);
+    _client.port = 1883;
+    _client.logging(on: false);
+    _client.keepAlivePeriod = 20;
+    _client.onDisconnected = _onDisconnected;
+    // _client.useWebSocket = true;
+
+    final connMessage = MqttConnectMessage()
+        .withClientIdentifier(clientId)
+        .startClean()
+        .withWillQos(MqttQos.atMostOnce);
+    _client.connectionMessage = connMessage;
+
+    try {
+      await _client.connect();
+    } catch (e) {
+      print('MQTT connection failed: $e');
+      _client.disconnect();
+    }
+
+    _client.updates!.listen((List<MqttReceivedMessage<MqttMessage>> messages) {
+      final recMsg = messages[0].payload as MqttPublishMessage;
+      final payload = MqttPublishPayload.bytesToStringAsString(
+        recMsg.payload.message,
+      );
+
+      try {
+        final data = json.decode(payload);
+        onMessage(messages[0].topic, data);
+      } catch (_) {
+        print('Invalid JSON received');
+      }
+    });
+
+    // Subscribe to topics
+    for (final topic in subscribeTopics) {
+      _client.subscribe(topic, MqttQos.atMostOnce);
+    }
+  }
+
+  void publish(String topic, Map<String, dynamic> message) {
+    final builder = MqttClientPayloadBuilder();
+    builder.addString(json.encode(message));
+    _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
+  }
+
+  void _onDisconnected() {
+    print('Disconnected from MQTT broker');
+  }
+
+  void disconnect() {
+    _client.disconnect();
+  }
+}
