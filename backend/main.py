@@ -7,7 +7,7 @@ from backend.services.fumehood_handler import FumehoodHandler
 from backend.services.checkout_handler import CheckoutHandler
 from backend.services.release_handler import ReleaseHandler
 
-BROKER_ADDRESS = 'localhost' #"172.30.243.138"
+BROKER_ADDRESS = '146.64.54.40' #"172.30.243.138"
 PORT = 1883
 
 #Topics
