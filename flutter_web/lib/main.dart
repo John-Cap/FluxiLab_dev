@@ -10,7 +10,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final mqtt = MQTTService(
-    broker: 'localhost',
+    broker: 'ws://146.64.54.40',
     clientId: 'flutterClient_${DateTime.now().millisecondsSinceEpoch}',
     subscribeTopics: [MqttTopics.loginResponse],
   );

@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:mqtt_client/mqtt_browser_client.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
 
 typedef MessageCallback =
     void Function(String topic, Map<String, dynamic> payload);
@@ -11,7 +11,7 @@ class MQTTService {
   final List<String> subscribeTopics;
 
   late MessageCallback onMessage = (topic, payload) {};
-  late MqttServerClient _client;
+  late MqttBrowserClient _client;
 
   MQTTService({
     required this.broker,
@@ -20,8 +20,9 @@ class MQTTService {
   });
 
   Future<void> connect() async {
-    _client = MqttServerClient(broker, clientId);
-    _client.port = 1883;
+    _client = MqttBrowserClient(broker, clientId);
+    _client.onConnected = onConnect;
+    _client.port = 9001;
     _client.logging(on: false);
     _client.keepAlivePeriod = 20;
     _client.onDisconnected = _onDisconnected;
@@ -72,5 +73,9 @@ class MQTTService {
 
   void disconnect() {
     _client.disconnect();
+  }
+
+  void onConnect() {
+    print("MQTT service connected!");
   }
 }
