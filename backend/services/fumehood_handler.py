@@ -15,10 +15,12 @@ class FumehoodHandler:
             token = data.get("token")
 
             if not token:
+                print('MIssing token!')
                 return self._respond(response_topic, {"status": "error", "message": "Missing token"})
 
             session = decode_token(token)
             if "error" in session:
+                print('Session error!')
                 return self._respond(response_topic, {"status": "error", "message": session["error"]})
 
             user_email = session.get("user")
@@ -26,6 +28,8 @@ class FumehoodHandler:
 
             fumehoods_raw = self.db.fetch_all_fumehoods() if role == "admin" else self.db.fetch_fumehoods_by_user(user_email)
             fumehoods = self._prepare_fumehoods(fumehoods_raw)
+            
+            print(f'Prepared fumehoods: {fumehoods}')
 
             self._respond(response_topic, {
                 "status": "success",
@@ -33,6 +37,7 @@ class FumehoodHandler:
             })
 
         except json.JSONDecodeError:
+            print(f'Error preparing fumehood list!')
             self._respond(response_topic, {"status": "error", "message": "Invalid JSON format"})
 
     def _respond(self, topic: str, message: dict):

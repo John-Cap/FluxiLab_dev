@@ -24,6 +24,7 @@ RELEASE_RESPONSE_TOPIC = "backend/fumehoods/release_response"
 #Maybe use global instance?
 client = mqtt.Client()
 db=MySQLDatabase()
+db.connect()
 authHandler = AuthHandler(
     mqtt_client=client,
     database=db
