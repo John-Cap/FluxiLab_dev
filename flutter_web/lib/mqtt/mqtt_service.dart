@@ -9,6 +9,7 @@ class MQTTService {
   final String broker;
   final String clientId;
   final List<String> subscribeTopics;
+  final String statusTopic;
 
   late MessageCallback onMessage = (topic, payload) {};
   late MqttBrowserClient _client;
@@ -17,6 +18,7 @@ class MQTTService {
     required this.broker,
     required this.clientId,
     required this.subscribeTopics,
+    required this.statusTopic,
   });
 
   Future<void> connect() async {
@@ -76,6 +78,9 @@ class MQTTService {
   }
 
   void onConnect() {
+    final builder = MqttClientPayloadBuilder();
+    builder.addString(json.encode({"statusPing": "MQTT_CONNECTED_UI_SIDE"}));
+    _client.publishMessage(statusTopic, MqttQos.atMostOnce, builder.payload!);
     print("MQTT service connected!");
   }
 }

@@ -12,7 +12,13 @@ class MyApp extends StatelessWidget {
   final mqtt = MQTTService(
     broker: 'ws://146.64.54.40',
     clientId: 'flutterClient_${DateTime.now().millisecondsSinceEpoch}',
-    subscribeTopics: [MqttTopics.loginResponse],
+    subscribeTopics: [
+      MqttTopics.loginResponse,
+      MqttTopics.checkoutResponse,
+      MqttTopics.fumehoodResponse,
+      MqttTopics.releaseResponse,
+    ],
+    statusTopic: MqttTopics.statusUI,
   );
 
   MyApp({super.key});

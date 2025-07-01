@@ -33,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (topic == MqttTopics.loginResponse) {
       setState(() => _loading = false);
       if (payload['status'] == 'success') {
+        print('WJ - Here');
         _storage.write(key: 'jwt', value: payload['token']);
         Navigator.pushReplacementNamed(context, '/fumehoods');
       } else {
@@ -61,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     widget.mqtt.publish(MqttTopics.loginRequest, {
-      'email': email,
+      'username': email,
       'password': password,
     });
   }
