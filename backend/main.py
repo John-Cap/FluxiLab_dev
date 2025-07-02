@@ -11,8 +11,8 @@ BROKER_ADDRESS = '146.64.54.40' #"172.30.243.138"
 PORT = 1883
 
 #Topics
-FUMEHOOD_LIST_REQ = "frontend/fumehoods/request"
-FUMEHOOD_LIST_RES = "backend/fumehoods/response"
+FUMEHOOD_LIST_REQ = "frontend/fumehoods/list"
+FUMEHOOD_LIST_RES = "backend/fumehoods/list_response"
 LOGIN_REQUEST_TOPIC = "frontend/login/request"
 LOGIN_RESPONSE_TOPIC = "backend/login/response"
 CHECKOUT_REQUEST_TOPIC = "frontend/fumehoods/checkout"
