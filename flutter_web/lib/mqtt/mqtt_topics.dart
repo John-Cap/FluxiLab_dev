@@ -11,6 +11,6 @@ class MqttTopics {
   static const releaseRequest = 'frontend/fumehoods/release';
   static const releaseResponse = 'backend/fumehoods/release_response';
 
-  static const statusUI = 'frontend/statPing';
-  static const statusBackend = 'backend/statPing';
+  static const statusUI = 'frontend/heartbeat';
+  static const statusBackend = 'backend/hearbeat';
 }

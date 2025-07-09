@@ -33,9 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (topic == MqttTopics.loginResponse) {
       setState(() => _loading = false);
       if (payload['status'] == 'success') {
-        print('WJ - Here');
         _storage.write(key: 'jwt', value: payload['token']);
         Navigator.pushReplacementNamed(context, '/fumehoods');
+        setState(() {});
       } else {
         setState(() {
           _statusMessage = payload['message'] ?? 'Login failed';

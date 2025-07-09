@@ -18,7 +18,6 @@ class MyApp extends StatelessWidget {
       MqttTopics.fumehoodResponse,
       MqttTopics.releaseResponse,
     ],
-    statusTopic: MqttTopics.statusUI,
   );
 
   MyApp({super.key});
