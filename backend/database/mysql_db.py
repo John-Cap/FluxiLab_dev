@@ -1,6 +1,8 @@
 import mysql.connector
 from mysql.connector import Error
 
+ORG_WAN_IP = "146.64.129.34"
+
 class MySQLDatabase:
     def __init__(self, host='pta-smartlab.csir.co.za', port=3306, user="pharma", password="Pharma00!", database="pharma"):
         self.host = host
@@ -53,6 +55,15 @@ class MySQLDatabase:
                 return None
             return self.fetchRecordByColumnValue("users", "id", user_id)
         return None
+
+    def getRedirectUrl(self,fumehoodNr):
+            url = self.fetchRecordByColumnValue("fumehoods", "fumehoodNr", fumehoodNr)
+            print(f"URL from db: {url}")
+            if url:
+                redirectUrl = f"http://{ORG_WAN_IP}:{url['externalPort']}" # type: ignore
+                return redirectUrl
+            else:
+                return None
 
     def getUserId(self, org_id=None, email=None):
         user = self.getUserRow(org_id=org_id, email=email)
