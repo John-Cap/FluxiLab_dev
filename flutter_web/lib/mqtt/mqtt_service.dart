@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter_web/mqtt/mqtt_topics.dart';
 import 'package:mqtt_client/mqtt_browser_client.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 
@@ -9,16 +11,16 @@ class MQTTService {
   final String broker;
   final String clientId;
   final List<String> subscribeTopics;
-  final String statusTopic;
 
   late MessageCallback onMessage = (topic, payload) {};
   late MqttBrowserClient _client;
+
+  Timer? _heartbeatTimer;
 
   MQTTService({
     required this.broker,
     required this.clientId,
     required this.subscribeTopics,
-    required this.statusTopic,
   });
 
   Future<void> connect() async {
@@ -26,8 +28,9 @@ class MQTTService {
     _client.onConnected = onConnect;
     _client.port = 9001;
     _client.logging(on: false);
-    _client.keepAlivePeriod = 20;
-    _client.onDisconnected = _onDisconnected;
+    _client.keepAlivePeriod = 60;
+    // _client.onDisconnected = _onDisconnected;
+    // _client.autoReconnect = true;
     // _client.useWebSocket = true;
 
     final connMessage = MqttConnectMessage()
@@ -53,7 +56,7 @@ class MQTTService {
         final data = json.decode(payload);
         onMessage(messages[0].topic, data);
       } catch (_) {
-        print('Invalid JSON received');
+        print('Invalid JSON received: $payload');
       }
     });
 
@@ -66,21 +69,33 @@ class MQTTService {
   void publish(String topic, Map<String, dynamic> message) {
     final builder = MqttClientPayloadBuilder();
     builder.addString(json.encode(message));
-    _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
+    _client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
   }
 
-  void _onDisconnected() {
-    print('Disconnected from MQTT broker');
+  Future<void> _onDisconnected() async {
+    for (var topic in subscribeTopics) {
+      _client.unsubscribe(topic);
+    }
+    // await _client.connect();
+    print('Disconnected from MQTT broker, attempting reconnect...');
   }
 
   void disconnect() {
-    _client.disconnect();
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+    // _client.disconnect();
   }
 
   void onConnect() {
-    final builder = MqttClientPayloadBuilder();
-    builder.addString(json.encode({"statusPing": "MQTT_CONNECTED_UI_SIDE"}));
-    _client.publishMessage(statusTopic, MqttQos.atMostOnce, builder.payload!);
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      final builder = MqttClientPayloadBuilder();
+      builder.addString(json.encode({"uiHeartbeat": "MQTT_CONNECTED_UI_SIDE"}));
+      _client.publishMessage(
+        MqttTopics.statusUI,
+        MqttQos.atMostOnce,
+        builder.payload!,
+      );
+    });
     print("MQTT service connected!");
   }
 }

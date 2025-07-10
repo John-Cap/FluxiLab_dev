@@ -4,12 +4,8 @@ import 'mqtt/mqtt_service.dart';
 import 'mqtt/mqtt_topics.dart';
 import 'screens/login_screen.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  final mqtt = MQTTService(
+void main() async {
+  MQTTService mqtt = MQTTService(
     broker: 'ws://146.64.54.40',
     clientId: 'flutterClient_${DateTime.now().millisecondsSinceEpoch}',
     subscribeTopics: [
@@ -18,10 +14,15 @@ class MyApp extends StatelessWidget {
       MqttTopics.fumehoodResponse,
       MqttTopics.releaseResponse,
     ],
-    statusTopic: MqttTopics.statusUI,
   );
+  await mqtt.connect();
+  runApp(MyApp(mqtt: mqtt));
+}
 
-  MyApp({super.key});
+class MyApp extends StatelessWidget {
+  final MQTTService mqtt;
+
+  MyApp({super.key, required this.mqtt});
 
   @override
   Widget build(BuildContext context) {
