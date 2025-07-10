@@ -28,9 +28,9 @@ class MQTTService {
     _client.onConnected = onConnect;
     _client.port = 9001;
     _client.logging(on: false);
-    _client.keepAlivePeriod = 20;
-    _client.onDisconnected = _onDisconnected;
-    _client.autoReconnect = false;
+    _client.keepAlivePeriod = 60;
+    // _client.onDisconnected = _onDisconnected;
+    // _client.autoReconnect = true;
     // _client.useWebSocket = true;
 
     final connMessage = MqttConnectMessage()
@@ -56,7 +56,7 @@ class MQTTService {
         final data = json.decode(payload);
         onMessage(messages[0].topic, data);
       } catch (_) {
-        print('Invalid JSON received');
+        print('Invalid JSON received: $payload');
       }
     });
 
@@ -69,21 +69,21 @@ class MQTTService {
   void publish(String topic, Map<String, dynamic> message) {
     final builder = MqttClientPayloadBuilder();
     builder.addString(json.encode(message));
-    _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
+    _client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
   }
 
   Future<void> _onDisconnected() async {
     for (var topic in subscribeTopics) {
       _client.unsubscribe(topic);
     }
-    await _client.connect();
+    // await _client.connect();
     print('Disconnected from MQTT broker, attempting reconnect...');
   }
 
   void disconnect() {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
-    _client.disconnect();
+    // _client.disconnect();
   }
 
   void onConnect() {

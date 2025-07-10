@@ -31,7 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleMqttMessage(String topic, Map<String, dynamic> payload) {
     if (topic == MqttTopics.loginResponse) {
-      setState(() => _loading = false);
+      setState(
+        () => _loading = false,
+      ); //TODO - will this kill the rest of what _handleMQTTMessage is supposed to do?
       if (payload['status'] == 'success') {
         _storage.write(key: 'jwt', value: payload['token']);
         Navigator.pushReplacementNamed(context, '/fumehoods');
