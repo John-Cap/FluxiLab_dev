@@ -20,19 +20,19 @@ Project planning and architecture design are in progress. Development has not ye
 
 Refer to the detailed architecture document at `docs/DESIGN.md`.
 
-## Planned Technology Stack
+## Technology Stack
 
 | Layer             | Technology             |
 |------------------|------------------------|
 | Frontend UI       | Flutter Web            |
 | Backend Services  | Python (asynchronous)  |
-| Communication     | MQTT (Mosquitto/EMQX)  |
-| Database          | PostgreSQL or MySQL    |
-| Edge Devices      | Raspberry Pi + Flutter |
+| Communication     | MQTT (Mosquitto 2.x)  |
+| Database          | MySQL    |
+| Edge Devices      | Raspberry Pi |
 | Routing Layer     | Static port forwarding via router configuration |
-| Deployment Tools  | Docker, NGINX (optional) |
+| Deployment Tools  | Python served, cloud based |
 
-## Directory Structure (Planned)
+## Directory Structure
 
 ├── backend/ # Python backend services
 ├── flutter_web/ # Flutter web portal
